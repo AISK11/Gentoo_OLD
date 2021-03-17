@@ -1,5 +1,5 @@
   GNU nano 5.3          /etc/udev/rules.d/80-net-name-slor.rules                    
-# File: /etc/udev/rules.d/80-net-name-slor.rules
+# File: /etc/udev/rules.d/80-net-name-slot.rules
 
 # eth0 (replace ENVID_NET_NAME_PATH with name)
 SUBSYSTEM=="net", AACTION=="add", DRIVERS=="?*", \
