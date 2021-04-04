@@ -610,9 +610,8 @@ Find all modules:
 \begin{Verbatim}[commandchars=\\\{\}]
 File \textcolor{file}{/etc/modules-load.d/<networking>.conf}:
 
-tun
-e1000e
-brcmfmac
+iwlwifi
+...
 \end{Verbatim}
 \subsection{Blacklist Module}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -815,10 +814,6 @@ LC_TELEPHONE="en_US.utf8"
 LC_MEASUREMENT="en_US.utf8"
 LC_IDENTIFICATION="en_US.utf8"  
 LC_ALL=                         # other
-
-- Keymap (\textcolor{file}{/etc/conf.d/keymaps}) from \textcolor{dir}{/usr/share/keymaps/}:
-keymap="us"
-    \textcolor{root}{root#} \textcolor{command}{rc-service} keymaps restart
 \end{Verbatim}
 
 \section{Keyboard Layout}
@@ -832,6 +827,7 @@ keymap="us"
 \chapter{Network}%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHAPTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{itemize}
     \item \textbf{net-misc/dhcpcd}
+    \item \textbf{net-analyzer/macchanger}
 \end{itemize}
 \section{Rename Network Interface}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -855,8 +851,20 @@ ATTR{type}=="1", KERNEL=="wlan*", NAME="<wlan0>"
     \textcolor{root}{root#} \textcolor{command}{reboot}
 \end{Verbatim}
 
-\section{Configure Network Device}
-\subsection{Configure net options}
+\section{Network Interface - UP, DHCP, DNS}
+\subsection{Stop Autorun}
+\begin{Verbatim}[commandchars=\\\{\}]
+- Stop autorun DHCP:
+    \textcolor{root}{root#} \textcolor{command}{rc-update} delete dhcpcd
+
+- Stop autorun network interfaces:
+File (\textcolor{file}{/etc/rc.conf}) (0644):
+\textcolor{comment}{# do not auto start network interface}
+rc_hotplug="!net.wlan0 !net.eth0"
+rc_dhcpcd_provide="!net"
+\end{Verbatim}
+
+\subsection{Configure IP options}
 \begin{Verbatim}[commandchars=\\\{\}]
 File (\textcolor{file}{/etc/conf.d/net}) (0644):
 
@@ -880,20 +888,15 @@ modules="iproute2"
 \textcolor{comment}{#config_<eth0>="<192.168.0.11/24>"}
 \textcolor{comment}{#routes_<eth0>="default via <192.168.0.1>"}
 \textcolor{comment}{#dns_servers_<eth0>="<1.1.1.1 1.0.0.1>"}
-config_eth0="null"
-config_wlan0="null"
+config_<eth0>="null"
+config_<wlan0>="null"
+
+\textcolor{comment}{# Wireless DHCP}
+modules_<wlan0>="wpa_supplicant"
+\textcolor{comment}{#config_<wlan0>="dhcpcd"}
 \end{Verbatim}
 
-\subsection{Stop Autorun}
-\begin{Verbatim}[commandchars=\\\{\}]
-- Stop autorun DHCP:
-    \textcolor{root}{root#} \textcolor{command}{rc-update} delete dhcpcd
 
-- Stop autorun network interfaces:
-File (\textcolor{file}{/etc/rc.conf}) (0644):
-\textcolor{comment}{# do not auto start network interface}
-rc_dhcpcd_provide="!net"
-\end{Verbatim}
 
 \subsection{DNS}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -956,7 +959,6 @@ alias net-pf-10 off         # IPv6
     \item \textbf{net-wireless/aircrack-ng}
 \end{itemize}
 \underline{\url{https://wireless.wiki.kernel.org/en/users/drivers/iwlwifi}}
-\subsection{Kernel}
 \begin{Verbatim}[commandchars=\\\{\}]
 \textcolor{comment}{IEEE 802.11:}
 \textcolor{block}{[*] Networking support  --->}
@@ -991,7 +993,7 @@ alias net-pf-10 off         # IPv6
     \textcolor{root}{root#} \textcolor{command}{echo} "iwlwifi" > \textcolor{file}{/etc/modules-load.d/<wifi>.conf}
 \end{Verbatim}
 
-\subsection{WPA\_supplicant}
+\subsection{WPA\_supplicant conf}
 \begin{Verbatim}[commandchars=\\\{\}]
 1.1 File \textcolor{file}{/etc/wpa_supplicant/wpa\_supplicant.conf}
 
@@ -1003,10 +1005,10 @@ update\_config=1
 1.2 Change mod to 600:
     \textcolor{root}{roo#t} \textcolor{command}{chmod} 600 \textcolor{file}{/etc/wpa_supplicant/wpa\_supplicant.conf}
 
-2. Start wpa\_supplicant on start:
+OPTIONAL. Start wpa\_supplicant on start:
     \textcolor{root}{root#} \textcolor{command}{rc-update} add wpa\_supplicant
     
-OPTIONAL - Run wpa\_supplicant to see, if interface was loaded:
+OPTIONAL. Run wpa\_supplicant to see, if interface was loaded:
     \textcolor{root}{root#} \textcolor{command}{wpa\_cli}
     
 4.1 Setup for dhcpcd (-B background, -M for wireless, -c for filename)
@@ -1014,21 +1016,24 @@ OPTIONAL - Run wpa\_supplicant to see, if interface was loaded:
 wpa_supplicant_args="-B -M -c/etc/wpa_supplicant/wpa_supplicant.conf"
 
 4.2 \textcolor{file}{/etc/conf.d/net}:
-\textcolor{command}{# Wireless DHCP}
+\textcolor{comment}{# Wireless DHCP}
 modules_<wlan0>="wpa_supplicant"
-config_<wlan0>="<dhcpcd|dhcp>"
+#config_<wlan0>="dhcpcd"
 \end{Verbatim}
 
-\subsection{Usage}
-2.4 Ghz channels = 1-14
-\subsubsection{Find BSSID}
+
+\subsection{Find ESSID+PSK}
 \begin{Verbatim}[commandchars=\\\{\}]
 0. List wireless interfaces:
     \textcolor{root}{root#} \textcolor{command}{iw} dev
-    
+
+0.5 Change MAC:
+    \textcolor{root}{root#} \textcolor{command}{macchanger} -Ab wlan0
+
 1. Wireless NIC to monitoring mode:
-\textcolor{root}{root#} \textcolor{command}{iw} <wlan0> set type <monitor|managed>
-\textcolor{root}{root#} \textcolor{command}{ip} l set <wlan0> up
+    \textcolor{root}{root#} \textcolor{command}{iw} <wlan0> set type <monitor|managed>
+    \textcolor{root}{root#} \textcolor{command}{rfkill} unblock <ID>
+    \textcolor{root}{root#} \textcolor{command}{ip} l set <wlan0> up
 
 2. Search for BSSID (show WPS, show Uptime, show ab = 2.4 GHz, g = 5GHz):
     \textcolor{root}{root#} \textcolor{command}{airodump-ng} [-W] [-U] [--band abg] <wlan0mon>
@@ -1045,7 +1050,7 @@ config_<wlan0>="<dhcpcd|dhcp>"
     \textcolor{root}{root#} \textcolor{command}{airmon-ng} stop <wlan0mon>
 \end{Verbatim}
 
-\subsubsection{Create config file for BSSID}
+\subsection{Create config file for ESSID}
 \begin{Verbatim}[commandchars=\\\{\}]
 1. SSID + Password:
 A) Edit via wpa\_passphrase:
@@ -1059,15 +1064,31 @@ network=\{
     scan_ssid=1
     key_mgmt=WPA-PSK
     psk="<PASSWORD>"
-    Priority=1
+    priority=1
 \}
 
-2. DHCP:
-    \textcolor{root}{root#} \textcolor{command}{dhcpcd} -4 -C resolv.conf [-W 192.168.0.1] <wlan0>
+network=\{
+    ssid=""
+    key_mgmt=NONE
+    priority=2
+\}
+
+\end{Verbatim}
+
+\section{RUN WLAN0}
+\begin{Verbatim}[commandchars=\\\{\}]
+    \textcolor{root}{root#} \textcolor{command}{macchanger} -Ab <wlan0>
+    \textcolor{root}{root#} \textcolor{command}{rfkill} unblock <TYPE|ID>
+    * \textcolor{root}{root#} \textcolor{command}{iw} <wlan0> set type managed
+    * \textcolor{root}{root#} \textcolor{command}{ip} l set <wlan0> up
+    \textcolor{root}{root#} \textcolor{command}{rm} \textcolor{file}{/var/lib/dhcpcd/*}
+    \textcolor{root}{root#} \textcolor{command}{rc-service} wpa_supplicant start
+    \textcolor{root}{root#} \textcolor{command}{dhcpcd} -4 -C resolv.conf [-W 192.168.0.1] wlan0
 \end{Verbatim}
 
 
-\section{Bluetooth}
+
+\section{Bluetooth - WiP}
 \begin{itemize}
     \item \textbf{sys-kernel/linux-firmware}
     \item \textbf{net-wireless/bluez}
@@ -1583,148 +1604,10 @@ RUN LEVELS:
 
 \chapter{System Hardening}%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHAPTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \underline{\url{https://wiki.gentoo.org/wiki/Security_Handbook}}
-\begin{itemize}
-    \item \textbf{net-analyzer/macchanger}
-\end{itemize}
-\section{Localhost info}
-\subsection{Hostname}
-\begin{Verbatim}[commandchars=\\\{\}]
-0. Check hostname:
-    \textcolor{root}{root#} \textcolor{command}{hostname}
-    
-1. Change hostname in \textcolor{file}{/etc/conf.d/hostname}
-hostname="<HOSTNAME">
 
-2. Reboot
-    \textcolor{root}{root#} \textcolor{command}{reboot}
-\end{Verbatim}
 
-\subsection{Time and Language}
-\begin{Verbatim}[commandchars=\\\{\}]
-- Timezone (\textcolor{file}{/etc/timezone}):
-     \textcolor{root}{root#} \textcolor{command}{echo} "<Europe/Helsinki"> > \textcolor{file}{/etc/timezone}
-     \textcolor{root}{root#} \textcolor{command}{emerge} --config sys-libs/timezone-data
 
-- Locale (\textcolor{file}{/etc/env.d/locale}):
-    \textcolor{root}{root#} \textcolor{command}{locale}
-LANG=en_GB.utf8                 # global lang
-LC_CTYPE="en_GB.utf8"           
-LC_NUMERIC="en_GB.utf8"         # thousand, decimal separator
-LC_TIME="en_GB.utf8"            # time and date
-LC_COLLATE="en_GB.utf8"
-LC_MONETARY="en_GB.utf8"        # currency
-LC_MESSAGES="en_GB.utf8"
-LC_PAPER="en_GB.utf8"           # a4, letter...
-LC_NAME="en_GB.utf8"
-LC_ADDRESS="en_GB.utf8"
-LC_TELEPHONE="en_GB.utf8"
-LC_MEASUREMENT="en_GB.utf8"
-LC_IDENTIFICATION="en_GB.utf8"  
-LC_ALL=                         # other
-
-- Keymap (\textcolor{file}{/etc/conf.d/keymaps}) from \textcolor{dir}{/usr/share/keymaps/}:
-keymap="us"
-    \textcolor{root}{root#} \textcolor{command}{rc-service} keymaps restart
-\end{Verbatim}
-
-\section{Network}
-\underline{\url{https://gitweb.gentoo.org/proj/netifrc.git/tree/doc/net.example.Linux.in}}
-\subsection{Check all interfaces}
-\begin{Verbatim}[commandchars=\\\{\}]
-A)  
-    \textcolor{root}{root#} \textcolor{command}{ls} \textcolor{dir}{/sys/class/net/}
-B)
-    \textcolor{root}{root#} \textcolor{command}{ip} (a)ddress [show up]
-\end{Verbatim}
-
-\subsection{Turn on/off interface}
-\subsubsection{OFF on startup}
-\begin{Verbatim}[commandchars=\\\{\}]
-File \textcolor{file}{/etc/rc.conf}:
-- Stop auto turn network interfaces
-\textcolor{comment}{# do not auto start network interface}
-rc_dhcpcd_provide="!net"
-
-- Stop auto turn on DHCP:
-    \textcolor{root}{root#} \textcolor{command}{rc-update} delete <net.eth0>
-    \textcolor{root}{root#} \textcolor{command}{rc-update} <delete> <dhcpcd>
-    \textcolor{root}{root#} \textcolor{command}{rc-service} <dhcpcd> stop
-\end{Verbatim}
-
-\subsubsection{Manually toggle}
-\begin{Verbatim}[commandchars=\\\{\}]
-- Manually turn on/off interface:
-    \textcolor{root}{root#} \textcolor{command}{ip} (l)ink set <INTERFACE> <up|down>
-\end{Verbatim}
-
-\subsection{Change MAC address}
-\begin{Verbatim}[commandchars=\\\{\}]
-A) Manually:
-    \textcolor{root}{root#} \textcolor{command}{ip} (l)ink set address <XX:XX:XX:XX:XX:XX> dev <INTERFACE>
-    
-B) via MAC-changer (use --help):
-    \textcolor{root}{root#} \textcolor{command}{macchanger} -A -b <INTERFACE>
-\end{Verbatim}
-
-\subsection{Add IPv4}
-\subsubsection{File config}
-\begin{Verbatim}[commandchars=\\\{\}]
-File \textcolor{file}{/etc/conf.d/net}:
-\textcolor{comment}{# Prefer Module (iproute2):}
-\textcolor{comment}{# do not use module: modules="!iwconfig"}
-modules="<iproute2|ifconfig>"
-\textcolor{comment}{# DHCP module for interface <eth0> (prefer dhcpd):}
-modules_<eth0>="dhcpcd"
-\textcolor{comment}{# Timeout after 10 seconds}
-dhcpcd_<eth0>="-t 10" 
-\textcolor{comment}{# DNS with DHCP:}
-\textcolor{comment}{# nontp - !overwrite /etc/ntp.conf}
-\textcolor{comment}{# nonis = !overwrite /etc/yp.conf}
-\textcolor{comment}{# nodns - !overwrite /etc/resolv.conf}
-dhcp_<eth0>="release nodns nontp nonis"
-
-2.2 Interface itself:
-2.2.A) DHCP:
-\textcolor{comment}{#config_<eth0>="dhcp"}
-2.2.B) Static IP:
-\textcolor{comment}{#config_<eth0>="<192.168.0.11/24>"}
-\textcolor{comment}{#routes_<eth0>="default via <192.168.0.1>"}
-\textcolor{comment}{#dns_servers_<eth0>="<1.1.1.1 1.0.0.1>"}
-2.2.C) Manual:
-config_eth0="null"
-\end{Verbatim}
-
-\subsubsection{Add Manually}
-\begin{Verbatim}[commandchars=\\\{\}]
-A) MANUAL
-1. IP address:
-    \textcolor{root}{root#} \textcolor{command}{ip} (a)ddress <add|delete> <IPv4>/24 dev <INTERFACE>
-2. Default Gateway:
-    \textcolor{root}{root#} \textcolor{command}{ip} (r)oute <add|delete> default via <DEFAULT_GW_IPv4>
-    
-B) DHCP:
-0. Remove last lease:
-    \textcolor{root}{root#} \textcolor{command}{rm} -f \textcolor{file}{/var/lib/dhcpcd/<eth0>.lease}
-1. IPv4 only, do not touch resolv.conf, whitelist only IP as DHCP server:
-    \textcolor{root}{root#} \textcolor{command}{dhcpcd} -4 -C resolv.conf [-W <DEFAULT_GW_IPv4>] <INTERFACE>
-2. release:
-    \textcolor{root}{root#} \textcolor{command}{dhcpcd} [--release] <INTERFACE>
-\end{Verbatim}
-
-\subsection{DNS}
-\underline{\url{https://privacytools.io/}}
-\begin{Verbatim}[commandchars=\\\{\}]
-File \textcolor{file}{/etc/resolv.con}:
-\textcolor{comment}{# Cloudfare}
-\textcolor{comment}{# Uncensored DNS - Denmark - Unicast}
-nameserver 89.233.43.71
-#nameserver 1.1.1.1
-#nameserver 1.0.0.1
-\textcolor{comment}{# CZ.NIC}
-nameserver 193.17.47.1
-nameserver 185.43.135.1
-\end{Verbatim}
-
+\section{Network - WiP}
 \subsection{Firewall}
 \begin{Verbatim}[commandchars=\\\{\}]
 DROP - no response; REJECT - closed port
@@ -1746,21 +1629,7 @@ File \textcolor{file}{/etc/hosts}
 0.0.0.0 google.com
 \end{Verbatim}
 
-\section{WiFi}
-\begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{file}{/etc/resolv.conf}
-rc_hotplug="!net.wlan0 !net.eth0"
 
-- Disable on startup:
-    \textcolor{root}{root#} \textcolor{command}{rc-update} delete wpa_supplicant
-
-0. Remove last lease
-    \textcolor{root}{root#} \textcolor{command}{rm} -f <wlan0>*
-
-1. Start wpa_supplicant
-    \textcolor{root}{root#} \textcolor{command}{rc-service} wpa_supplicant start
-    \textcolor{root}{root#} \textcolor{command}{dhcpcd} -4 -C resolv.conf <wlan0> 
-\end{Verbatim}
 
 \section{Bluetooth}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1875,10 +1744,6 @@ See section (\underline{\ref{update-grub}})
     \textcolor{root}{root#} \textcolor{command}{rc-update} add numlock default
 \end{Verbatim}
 
-\section{Add User}
-\begin{Verbatim}[commandchars=\\\{\}]
-    \textcolor{root}{root#} \textcolor{command}{useradd} -m <USER>
-\end{Verbatim}
 
 \section{Power Saving}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1887,11 +1752,7 @@ setterm terminfo
 
 
 \section{Zshell}
-\begin{itemize}
-    \item \textbf{app-shells/zsh}
-    \item \textbf{app-shells/zsh-completions}
-    \item \textbf{app-shells/gentoo-zsh-completions}
-\end{itemize}
+
 \subsection{Select zsh}
 \begin{Verbatim}[commandchars=\\\{\}]
 
@@ -1986,9 +1847,24 @@ INPUT_DEVICES="libinput synaptics"
 \begin{Verbatim}[commandchars=\\\{\}]
 File \textcolor{file}{~/.bash_profile}
 \textcolor{comment}{# if (length of \$DISPLAY is 0 && \$(tty) = /dev/tty1) startx}
-if [[ -z \$DISPLAY]] && [[ \$(tty) = /dev/tty1 ]]; then exec startx; fi
+if [[ -z \$DISPLAY ]] && [[ \$(tty) = /dev/tty1 ]]; then exec startx; fi
 \end{Verbatim}
 
+\section{SUID startx for non-root}
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{root}{root#} \textcolor{command}{chmod} 4755 \textcolor{file}{/usr/bin/startx}
+\end{Verbatim}
+
+\section{Non root Xorg}
+\begin{Verbatim}[commandchars=\\\{\}]
+1.1 Verify elogind is working porperly:
+    \textcolor{root}{root#} \textcolor{command}{loginctl} user-status
+    Failed to connect to bus: No such file or directory:
+    
+1.2
+
+\textcolor{root}{root#} \textcolor{command}{chmod} 4755 \textcolor{file}{/usr/bin/startx}
+\end{Verbatim}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2009,8 +1885,8 @@ if [[ -z \$DISPLAY]] && [[ \$(tty) = /dev/tty1 ]]; then exec startx; fi
     \item \textbf{media-gfx/scrot}      - take screenshot
     \item \textbf{x11-terms/rxvt-unicode} - terminal emulator
     \item \textbf{x11-misc/numlockx} - toggle numlock in x
-    \item \textbf{x11-misc/xclip}
-    \item \textbf{lxde-base/lxappearance} - change theme and cursor
+    \item x11-misc/xclip
+    \item lxde-base/lxappearance - change theme and cursor
 \end{itemize}
 \subsection{Configure for X}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -2096,28 +1972,34 @@ bindsym Print exec ~/.scripts/prtsc.sh
 
 
 \subsection{Font}
+\underline{\url{https://github.com/adobe-fonts/source-code-pro}}
+
 \begin{itemize}
     \item \textbf{dev-vcs/git}
 \end{itemize}
-\begin{Verbatim}[commandchars=\\\{\}]
-1. Create fonts directory:
-    \textcolor{root}{root#} \textcolor{command}{mkdir} ~/.fonts
 
+
+\begin{Verbatim}[commandchars=\\\{\}]
+Find all installed fonts:
+    \textcolor{root}{root#} \textcolor{command}{fc-list}
+
+CUSTOM font:
+1. Create fonts directory:
+    \textcolor{user}{user\$} \textcolor{command}{mkdir} \textcolor{dir}{~/.fonts/}
+ 
 2. Download font:
-    \textcolor{root}{root#} \textcolor{command}{git} clone <https://github.com/supermarin/YosemiteSanFranciscoFont
+    \textcolor{user}{user\$} \textcolor{command}{git} clone https://github.com/adobe-fonts/source-code-pro
     
-3. Move font to \textcolor{dir}{~/.fonts}:
-    \textcolor{root}{root}\textcolor{dir}{ ~/YosemiteSanFranciscoFont#} \textcolor{command}{mv} *.ttf \textcolor{dir}{ ~/.fonts/}
-    
+3. copy all .ttf to font directory:
+    \textcolor{user}{user\$} \textcolor{command}{cp} \textcolor{file}{~/source-code-pro/TTF/*.ttf} \textcolor{dir}{~/.fonts/}
+
 4. Set new font in i3:
 File \textcolor{file}{~/.config/i3/config} (0644):
 \textcolor{comment}{# Change font}
 #font pango:monospace 8
-font pango:System San Francisco Display Bold 11
-
-5. Remove downloaded git:
-    \textcolor{root}{root#} \textcolor{command}{rm} -rf \textcolor{dir}{~/YosemiteSanFranciscoFont}
+font pango:Source Code Pro Bold 10
 \end{Verbatim}
+
 
 \subsection{Wallpaper}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -2224,16 +2106,7 @@ interval=1
 color=#ffd369
 
 [cpu]
-command=~/.config/i3.cpu.sh
-interval=1
-color=#
-
-
-File (\textcolor{file}{~/.config/i3/cpu.sh}) (0700):
-#!/usr/bin/env sh
-
-USAGE=\$((10000 - \$(mpstat | tail -n 1 | rev | cut -d '.' -f 1 | rev | tr -d .)))
-printf "CPU: \%.2f\%\%\char092n" \$((USAGE / 100)).\$((USAGE \% 100))
+...
 
 \textcolor{comment}{# To do}
 CPU
@@ -2270,7 +2143,7 @@ bindsym \$mod+D exec dmenu_run -b -fn monospace -nb "#393e46" -nf "#ffd369" \cha
 \subsection{Terminal emulator - \$\{TERM\}}
 \begin{Verbatim}[commandchars=\\\{\}]
 1. File (\textcolor{file}{/etc/portage/package.use/urxvt}) (0644):
-X11-terms/rxvt-unicode 256-color blink fading-colors gdk-pixbuf xtf
+x11-terms/rxvt-unicode 256-color blink fading-colors gdk-pixbuf xtf
 
 2. Update after changed USE flags:
     \textcolor{root}{root#} \textcolor{command}{emerge} --ask --changed-use --deep --with-bdeps=y @world
@@ -2359,6 +2232,7 @@ Core:
     \item \textbf{sys-fs/lvm2}
     \item \textbf{sys-fs/cryptsetup}
     \item \textbf{app-admin/doas}
+    \item \textbf{dev-vcs/git}
 \end{itemize}
 HW detection:
 \begin{itemize}
@@ -2373,6 +2247,8 @@ HW detection:
 System monitoring:
 \begin{itemize}
     \item \textbf{sys-processes/htop}
+    \item \textbf{sys-process/lsof} \# for more informative htop
+    \item \textbf{app-misc/neofetch}
 \end{itemize}
 System:
 \begin{itemize}
@@ -2380,6 +2256,10 @@ System:
     \item \textbf{sys-fs/dosfstools} - mkfs -t vfat
     \item \textbf{sys-fs/ntfs3g} - mkfs -t ntfs
     \item \textbf{media-gfx/imagemagick}
+\end{itemize}
+Portage:
+\begin{itemize}
+    \item \textbf{app-portage/gentoolkit}
 \end{itemize}
 Network Core:
 \begin{itemize}
@@ -2389,8 +2269,49 @@ Network Core:
     \item \textbf{net-wireless/wpa\_supplicant}
     \item \textbf{net-wireless/bluez} - bluetooth
     \item \textbf{net-analyzer/macchanger}
+    \item \textbf{net-wireless/aircrack-ng}
 \end{itemize}
 WIP:
+Shell + Text editor
+\begin{itemize}
+    \item \textbf{app-editors/vim}
+    \item \textbf{app-shells/zsh}
+    \item \textbf{app-shells/zsh-completions}
+    \item \textbf{app-shells/gentoo-zsh-completions}
+\end{itemize}
+
+
+\section{Vim}
+\subsection{Config}
+\begin{Verbatim}[commandchars=\\\{\}]
+Config files:
+\textcolor{file}{/etc/vim/vimrc} - global
+\textcolor{file}{~/.vimrc} - per user
+
+1. Set Text editor:
+A) For whole system:
+    \textcolor{root}{root#} \textcolor{command}{eselect} editor set <N>
+B) for user only (\textcolor{file}{~/.bashrc}):
+\textcolor{comment}{# Default editor vim}
+export EDITOR="/usr/bin/vim"
+
+2. Update variables:
+\textcolor{root}{root#} \textcolor{command}{source} \textcolor{file}{/etc/profile}
+\end{Verbatim}
+\subsection{Tricks}
+\begin{Verbatim}[commandchars=\\\{\}]
+- Add '#' to start of file:
+    :\%s/^/#/g
+    \textcolor{root}{root#} \textcolor{command}{vim} -c ":\%s/^/#/g" -c ":wq" <FILE>
+\end{Verbatim}
+
+
+\section{Zsh}
+\subsection{Config}
+\begin{Verbatim}[commandchars=\\\{\}]
+
+
+\end{Verbatim}
 
 
 %
@@ -2409,16 +2330,13 @@ Network tools;
 
 System:
 \begin{itemize}
-    \item \textbf{sys-apps/inxi}
-    \item \textbf{sys-process/htop}
-    \item \textbf{sys-process/lsof} \# for more informative htop
-    \item \textbf{app-misc/neofetch}
+
     
     \item \textbf{zsh}
-    \item \textbf{doas}
+
 
     \item \textbf{vim}
-    \item \textbf{dev-vcs/git}
+    
 
     \item \textbf{hashcat}
     \item git + FontAwesome
