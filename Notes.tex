@@ -1080,7 +1080,7 @@ network=\{
     \textcolor{root}{root#} \textcolor{command}{macchanger} -Ab <wlan0>
     \textcolor{root}{root#} \textcolor{command}{rfkill} unblock <TYPE|ID>
     * \textcolor{root}{root#} \textcolor{command}{iw} <wlan0> set type managed
-    * \textcolor{root}{root#} \textcolor{command}{ip} l set <wlan0> up
+    \textcolor{root}{root#} \textcolor{command}{ip} l set <wlan0> up
     \textcolor{root}{root#} \textcolor{command}{rm} \textcolor{file}{/var/lib/dhcpcd/*}
     \textcolor{root}{root#} \textcolor{command}{rc-service} wpa_supplicant start
     \textcolor{root}{root#} \textcolor{command}{dhcpcd} -4 -C resolv.conf [-W 192.168.0.1] wlan0
@@ -1407,8 +1407,8 @@ ACCEPT_LICENSE="-* @FREE"
 
 \textcolor{comment}{# Overwritten by /etc/portage/package.use}
 USE="-aqua -a52 -emacs -xemacs -gnome -gnome-keyrings \char092
--ios -ipod -kde -neon -systemd -vcd -zeroconf -ipv6 \char092
-elogind crypt X bluetooth unicode \char092
+-ios -ipod -kde -neon -systemd -vcd -zeroconf -ipv6 -consolekit -wayland\char092
+crypt elogind dbus X bluetooth unicode \char092
 hardened lm-sensors zsh-completion bindist"
 
 \textcolor{comment}{################### X #############}
@@ -1671,11 +1671,7 @@ rfkill <unblock|block> <ID>
 \subsection{Rootkit check}
 
 \section{Logging}
-\subsection{MOTD}
-\begin{Verbatim}[commandchars=\\\{\}]
-No Message on login screen:
-    \textcolor{root}{[root#} \textcolor{command}{echo} "" > \textcolor{file}{/etc/issue}
-\end{Verbatim}
+
 
 
 \section{Local Passwords}
@@ -1683,9 +1679,6 @@ No Message on login screen:
 \section{Kernel Hardening}
 
 \section{Proxy, VPN and Tor}
-
-\section{Normal user}
-group wheel
 
 \section{MESS}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1748,20 +1741,6 @@ See section (\underline{\ref{update-grub}})
 \section{Power Saving}
 \begin{Verbatim}[commandchars=\\\{\}]
 setterm terminfo
-\end{Verbatim}
-
-
-\section{Zshell}
-
-\subsection{Select zsh}
-\begin{Verbatim}[commandchars=\\\{\}]
-
-\end{Verbatim}
-
-
-\subsection{Configure zsh}
-\begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 
 
@@ -1847,23 +1826,32 @@ INPUT_DEVICES="libinput synaptics"
 \begin{Verbatim}[commandchars=\\\{\}]
 File \textcolor{file}{~/.bash_profile}
 \textcolor{comment}{# if (length of \$DISPLAY is 0 && \$(tty) = /dev/tty1) startx}
-if [[ -z \$DISPLAY ]] && [[ \$(tty) = /dev/tty1 ]]; then exec startx; fi
+if [[ -z \$DISPLAY ]] && [[ \$(tty) = /dev/tty1 ]]; 
+then
+    doas env-update
+    source /etc/profile
+    startx
+fi
 \end{Verbatim}
 
-\section{SUID startx for non-root}
-\begin{Verbatim}[commandchars=\\\{\}]
-\textcolor{root}{root#} \textcolor{command}{chmod} 4755 \textcolor{file}{/usr/bin/startx}
-\end{Verbatim}
 
 \section{Non root Xorg}
 \begin{Verbatim}[commandchars=\\\{\}]
-1.1 Verify elogind is working porperly:
+0. Verify, if elogind is working properly:
     \textcolor{root}{root#} \textcolor{command}{loginctl} user-status
-    Failed to connect to bus: No such file or directory:
-    
-1.2
 
-\textcolor{root}{root#} \textcolor{command}{chmod} 4755 \textcolor{file}{/usr/bin/startx}
+1. Start dependent processes:
+    \textcolor{root}{root#} \textcolor{command}{rc-service} start elogind
+    \textcolor{root}{root#} \textcolor{command}{rc-service} start dbus
+    \textcolor{root}{root#} \textcolor{command}{env-update}
+    \textcolor{user}{user\$} \textcolor{command}{source} \textcolor{file}{/etc/profile}
+
+2. Start X:
+    \textcolor{user}{user\$} \textcolor{command}{startx}
+
+- OPTIONAL Add elogind and dbus to startup:
+    \textcolor{root}{root#} \textcolor{command}{rc-update} add elogind
+    \textcolor{root}{root#} \textcolor{command}{rc-update} add dbus
 \end{Verbatim}
 
 
@@ -1909,6 +1897,10 @@ exec i3
 \end{Verbatim}
 
 \subsection{Brightness}
+\begin{itemize}
+    \item \textbf{xf86-video-intel}
+\end{itemize}
+
 \textbf{- Script to not go under 10\% of brightness:}
 \begin{Verbatim}[commandchars=\\\{\}]
 File (\textcolor{file}{~/.config/i3/<brightness.sh>}) (0755):
@@ -1928,8 +1920,8 @@ File (\textcolor{file}{~/.config/i3/config}) (0644):
 \textcolor{comment}{# Startup brightness}
 exec xbacklight -set 50
 \textcolor{comment}{# Regulate brightness with Fn+F5 and Fn+F6}
-bindsym X86MonBrightnessUp exec xbacklight -inc 10
-bindsym X86MonBrightnessDown exec ~/.config/i3/brightness.sh
+bindsym XF86MonBrightnessUp exec xbacklight -inc 10
+bindsym XF86MonBrightnessDown exec ~/.config/i3/brightness.sh
 \end{Verbatim}
 
 \subsection{Shortcuts}
@@ -2143,7 +2135,7 @@ bindsym \$mod+D exec dmenu_run -b -fn monospace -nb "#393e46" -nf "#ffd369" \cha
 \subsection{Terminal emulator - \$\{TERM\}}
 \begin{Verbatim}[commandchars=\\\{\}]
 1. File (\textcolor{file}{/etc/portage/package.use/urxvt}) (0644):
-x11-terms/rxvt-unicode 256-color blink fading-colors gdk-pixbuf xtf
+x11-terms/rxvt-unicode 256-color blink fading-colors gdk-pixbuf xft 24-bit-color
 
 2. Update after changed USE flags:
     \textcolor{root}{root#} \textcolor{command}{emerge} --ask --changed-use --deep --with-bdeps=y @world
@@ -2155,7 +2147,7 @@ Xft.antialias: true
 Xft.dpi:    100
 
 \textcolor{comment}{! Font}
-URxvt.font: xft:monospace:size=12
+URxvt.font: xft:monospace:size=10
 \textcolor{comment}{! Disable Scrollbar}
 URxvt.scrollBar: false
 \textcolor{comment}{! Transparency - higher value = higher transparency}
@@ -2271,14 +2263,34 @@ Network Core:
     \item \textbf{net-analyzer/macchanger}
     \item \textbf{net-wireless/aircrack-ng}
 \end{itemize}
-WIP:
 Shell + Text editor
 \begin{itemize}
     \item \textbf{app-editors/vim}
     \item \textbf{app-shells/zsh}
     \item \textbf{app-shells/zsh-completions}
     \item \textbf{app-shells/gentoo-zsh-completions}
+    \item \textbf{app-shells/zsh-syntax-highlighting}
 \end{itemize}
+X + i3
+\begin{itemize}
+    \item \textbf{x11-base/xorg-server}
+    \item \textbf{x11-base/xorg-drivers}
+    \item \textbf{x11-apps/xrandr}
+    \item \textbf{x11-misc/i3-gaps}     - i3wm
+    \item \textbf{x11-misc/dmenu}       - dmenu
+    \item \textbf{x11-misc/i3blocks}    - bar
+    \item \textbf{x11-misc/i3lock}      - lock screen
+    \item \textbf{x11-apps/xprop}       - properties of X window
+    \item \textbf{x11-aps/xev}          - keys captured by X
+    \item \textbf{x11-apps/xset}        - stop power saving
+    \item \textbf{x11-apps/xbacklight}  - set brightness
+    \item \textbf{media-gfx/feh}        - set wallpaper
+    \item \textbf{media-gfx/scrot}      - take screenshot
+    \item \textbf{x11-terms/rxvt-unicode} - terminal emulator
+    \item \textbf{x11-misc/numlockx} - toggle numlock in x
+\end{itemize}
+
+
 
 
 \section{Vim}
@@ -2305,12 +2317,75 @@ export EDITOR="/usr/bin/vim"
     \textcolor{root}{root#} \textcolor{command}{vim} -c ":\%s/^/#/g" -c ":wq" <FILE>
 \end{Verbatim}
 
+\subsection{Adjust}
+\begin{Verbatim}[commandchars=\\\{\}]
+File (\textcolor{file}{~/.vimrc})
+
+\textcolor{comment}{# Tab 4 spaces}
+set tabstop=4
+set shiftwidth=4
+set expandtab
+\textcolor{comment}{# Line numbers}
+set number
+\end{Verbatim}
+
+
+
 
 \section{Zsh}
+\begin{itemize}
+    \item \textbf{app-shells/zsh-syntax-highlighting}
+\end{itemize}
 \subsection{Config}
+\underline{\url{http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html}}\newline
 \begin{Verbatim}[commandchars=\\\{\}]
+File (\textcolor{file}{~/.zshrc}):
+\textcolor{comment}{# Autocompletion}
+autoload -U compinit 
+zstyle ':completion:*' menu select
+zmodload zsh/complist
+compinit
+_comp_options+=(globdots)
 
+\textcolor{comment}{# Autocorection}
+\textcolor{comment}{#setopt correctall}
 
+\textcolor{comment}{# Command prompt}
+export PS1="\%B\%F\{#d00000\}\%n\%f\%F\{#faa307\}@\%f\%F\{#d00000\}\%m\%f \%F\{#faa307\}\%~\%f
+\%F\{#d00000\}>\%f\%b \%F\{#ffffff\}" 
+
+\textcolor{comment}{# Fix special keys}
+\textcolor{comment}{# Run 'cat' and press characters (both in tty and pts)}
+bindkey  "^[[1~"   beginning-of-line
+bindkey  "^[[4~"   end-of-line
+bindkey  "^[[3~"   delete-char
+bindkey  "^[[7~"   beginning-of-line
+bindkey  "^[[8~"   end-of-line
+bindkey  "^[[3~"   delete-char
+
+\textcolor{comment}{# History}
+export HISTSIZE=2000
+export HISTFILE="\$\{HOME\}/.history" 
+export SAVEHIST=\$\{HISTSIZE\}
+
+\textcolor{comment}{# Regex instead of globbing}
+setopt extendedglob
+
+\textcolor{comment}{# Aliases}
+alias ls='ls --color=always'
+
+\textcolor{comment}{# Syntax highlight plugin (must be at end of line!)}
+source /usr/share/zsh/site-functions/zsh-syntax-highlighting.zsh
+\end{Verbatim}
+
+\subsection{Change defualt shell}
+\begin{Verbatim}[commandchars=\\\{\}]
+- Source updated \textcolor{file}{~/.zshrc}:
+    \textcolor{root}{root#} \textcolor{command}{source} \textcolor{file}{~/.zshrc}
+    
+1.A Select as default shell:
+\textcolor{user}{user\$} \textcolor{command}{chsh} -s \textcolor{file}{/bin/zsh}
+\textcolor{root}{root#} \textcolor{command}{usermod} -s \textcolor{file}{/bin/zsh} <USER>
 \end{Verbatim}
 
 
@@ -2331,12 +2406,6 @@ Network tools;
 System:
 \begin{itemize}
 
-    
-    \item \textbf{zsh}
-
-
-    \item \textbf{vim}
-    
 
     \item \textbf{hashcat}
     \item git + FontAwesome
@@ -2375,137 +2444,9 @@ rc-update add numlock default
 dev-vcs/git - git
 \end{Verbatim}
 
-\section{Bonus - text manipulation}
-\begin{itemize}
-    \item awk
-    \item sed
-    \item xargs
-    \item sort
-\end{itemize}
 
 
-\chapter{Cstom Kernel}
-\begin{Verbatim}[commandchars=\\\{\}]
-Networking Support -> 
-    Networking Options ->
-        <> The IPv6 protocol
 
-
-[*] Networking support --->
-      <M>   Bluetooth subsystem support --->
-              [*]   Bluetooth Classic (BR/EDR) features
-              <*>     RFCOMM protocol support
-              <*>     HIDP protocol support
-              [*]     Bluetooth High Speed (HS) features
-              [*]   Bluetooth Low Energy (LE) features
-                    Bluetooth device drivers --->
-                      <M> HCI USB driver
-                      <M> HCI UART driver
-      <*>   RF switch subsystem support --->
-Device Drivers --->
-          HID support --->
-            <*>   User-space I/O driver support for HID subsystem
-
-[*] Networking support  --->
-    [*] Wireless  --->
-        <M>   cfg80211 - wireless configuration API
-        [*]     enable powersave by default
-        <M>   Generic IEEE 802.11 Networking Stack (mac80211)
-
-Device Drivers  --->
-        [*] Network device support  --->
-        --- Network device support
-        [*]   Wireless LAN  --->
-            --- Wireless LAN
-            [*]   Intel devices
-            <M>     Intel Wireless WiFi Next Gen AGN - 
-            Wireless-N/Advanced-N/Ultimate-N (iwlwifi)
-            <M>     Intel Wireless WiFi DVM Firmware support
-            <M>     Intel Wireless WiFi MVM Firmware support
-
-Device Drivers  --->
-    -*- I2C support  --->
-        <*>   I2C device interface
-    <*> Hardware Monitoring support  --->
-        Select a driver, e.g.:
-        [*] Intel Core/Core2/Atom temperature sensor (coretemp)   
-        
-Device Drivers --->
-  Input device support --->
-  <*>  Event interface
-Device Drivers  --->
-  Input device support  --->
-  <*>   Event interface
-  [*]   Mice  --->
-     <*>   PS/2 mouse   
-
-
-Device Drivers --->
-  Input device support --->
-  <*>  Event interface
-  
-Device Drivers --->
-   Graphics support --->
-      <*> Direct Rendering Manager (Xfree86 4.1.0 and higher DRI support)
-      <M/*>  Nouveau (NVIDIA) cards     
-      
-      
-Device Drivers --->
-   NVME Support --->
-     <*> NVM Express block device
-
-Processor type and features --->
-   [*] Intel Low Power Subsystem Support
- Device Drivers --->
-   Input device support --->
-     [*] Mice --->
-       <*> Synaptics I2C Touchpad support
-     <*> Synaptics RMI4 bus support
-     <*>   RMI4 I2C Support
-     <*>   RMI4 SMB Support
-     [*]   RMI4 Function 03 (PS2 Guest)
-     [*]   RMI4 Function 11 (2D pointing)
-     [*]   RMI4 Function 30 (GPIO LED)
-     [*]   RMI4 Function 34 (Device reflash)
-     [*]   RMI4 Function 54 (Analog diagnostics)
-     -*-   RMI4 Function 55 (Sensor tuning)
-   I2C Support --->
-     -*- I2C support
-        I2C Hardware Bus support --->
-          <*> Intel 82801 (ICH/PCH)
-          <*> SMBus Control Method Interface
-          <*> Synopsys DesignWare Platform
-          <*> Synopsys DesignWare PCI
-   -*- Pin controllers --->
-     <*> Intel Canon Lake PCH pinctrl and GPIO driver
-   Multifunction device drivers --->
-     <*> Intel Low Power Subsystem support in ACPI mode
-     <*> Intel Low Power Subsystem support in PCI mode
-   HID support
-     -*- HID support
-     <*> Generic HID driver
-         Special HID drivers --->
-           <*> Lenovo / ThinkPad devices
-           <*> HID Multitouch panels
-           
-           <*> Speedlink VAD Cezanne mouse support
-           
-   [*] DMA Engine support --->
-     <*> Intel integrated DMA 64-bit support
-     -*- Synopsys DesignWare AHB DMA PCI driver
-   [*] X86 Platform Specific Device Drivers --->
-     <*> Lenovo IdeaPad Laptop Extras
-     <*> ThinkPad ACPI Laptop Extras
-     <*> WMI
-     <*>   WMI embedded Binary MOF driver    
-     
-     
-     
-Device Drivers 
-    [*] Pin Controllers
-        <*> Intel Sunrisepoint pinctrl and GPIO driver
-
-\end{Verbatim}
 
 
 \end{document}
