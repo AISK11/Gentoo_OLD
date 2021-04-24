@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Author: AISK11
-# This script calculate network throughput for interface "wlan0" in b/s every second.
+# This script calculates network throughput for interface "wlan0" in b/s every second.
 # 1 MB/s = 8 Mb/s
 # 1 Mb/s = 1,000 kb/s = 1,000,000 b/s
 
@@ -36,7 +36,7 @@ then
         TX_BITS=$(( ${TX_BITS} / 1000 ))
         echo "RX ${RX_BITS} kb/s; TX ${TX_BITS} kb/s"
     else
-        echo "RX ${RX_BITS} b/s; TX ${TX_BITS} b/s"
+        echo "RX ${RX_BITS}  b/s; TX ${TX_BITS}  b/s"
     fi
 else
     echo "UNKNOWN"
