@@ -36,7 +36,7 @@ then
         TX_BITS=$(( ${TX_BITS} / 1000 ))
         echo "RX ${RX_BITS} kb/s; TX ${TX_BITS} kb/s"
     else
-        echo "RX = ${RX_BITS} b/s; TX = ${TX_BITS} b/s"
+        echo "RX ${RX_BITS} b/s; TX ${TX_BITS} b/s"
     fi
 else
     echo "UNKNOWN"
