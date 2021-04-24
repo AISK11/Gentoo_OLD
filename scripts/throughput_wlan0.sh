@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# Author: AISK11
+# This script calculate network throughput for interface "wlan0" in b/s every second.
 # 1 MB/s = 8 Mb/s
 # 1 Mb/s = 1,000 kb/s = 1,000,000 b/s
 
@@ -19,7 +21,7 @@ then
     TX_NEW=$(cat /sys/class/net/${INTERFACE}/statistics/tx_bytes)
     TX_BYTES=$(( ${TX_NEW} - ${TX_OLD} ))
     RX_BYTES=$(( ${RX_NEW} - ${RX_OLD} ))
-    echo "RX ${RX_BYTES} B/s; TX ${TX_BYTES} B/s"
+    # Debug # echo "RX ${RX_BYTES} B/s; TX ${TX_BYTES} B/s"
     TX_BITS=$(( ${TX_BYTES} * 8))
     RX_BITS=$(( ${RX_BYTES} * 8))
 
@@ -39,6 +41,3 @@ then
 else
     echo "UNKNOWN"
 fi
-
-
-
