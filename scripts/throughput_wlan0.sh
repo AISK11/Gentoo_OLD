@@ -4,6 +4,7 @@
 # Description: This script calculates network throughput for interface "wlan0" in b/s every second.
 # 1 MB/s = 8 Mb/s
 # 1 Mb/s = 1,000 kb/s = 1,000,000 b/s
+# Created for: i3blocks
 
 # interfaces=<eth0|wlan0|lo>
 INTERFACE="wlan0"
