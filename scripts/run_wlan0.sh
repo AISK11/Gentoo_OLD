@@ -7,9 +7,11 @@
 # Requirements: /etc/doas.conf:
 # permit nopass :wheel
 
-doas macchanger -Ab wlan0
+INTERFACE="wlan0"
+
+doas macchanger -Ab ${INTERFACE}
 doas rfkill unblock wlan
 doas rm -f /var/lib/dhcpcd/*
-doas ip l set wlan0 up
+doas ip l set ${INTERFACE} up
 doas rc-service wpa_supplicant start
-doas dhcpcd -4 -C resolv.conf wlan0
+doas dhcpcd -4 -C resolv.conf ${INTERFACE}
