@@ -28,14 +28,14 @@ then
     then
         RX_BITS=$(( ${RX_BITS} / 1000000 ))
         TX_BITS=$(( ${TX_BITS} / 1000000 ))
-        printf "RX %04d Mb/s; TX %4d Mb/s\n" ${RX_BITS} ${TX_BITS}
+        printf "RX %4d Mb/s; TX %4d Mb/s\n" ${RX_BITS} ${TX_BITS}
     elif [ "${TX_BITS}" -ge "1000" ] || [ "${RX_BITS}" -ge "1000" ]
     then
         RX_BITS=$(( ${RX_BITS} / 1000 )) 
         TX_BITS=$(( ${TX_BITS} / 1000 ))
-        printf "RX %04d kb/s; TX %4d kb/s\n" ${RX_BITS} ${TX_BITS}
+        printf "RX %4d kb/s; TX %4d kb/s\n" ${RX_BITS} ${TX_BITS}
     else
-        printf "RX %04d  b/s; TX %4d  b/s\n" ${RX_BITS} ${TX_BITS}
+        printf "RX %4d  b/s; TX %4d  b/s\n" ${RX_BITS} ${TX_BITS}
     fi
 else
     printf "UNKNOWN\n"
