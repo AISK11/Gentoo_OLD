@@ -11,7 +11,7 @@ INTERFACE_STATE=$(ip a | grep ${INTERFACE} | grep -v "inet" | cut -d' ' -f9)
 
 if [ "${INTERFACE_STATE}" = "DOWN" ]
 then
-    echo "DOWN"
+    printf "DOWN\n"
 elif [ "${INTERFACE_STATE}" = "UP" ]
 then
     RX_OLD=$(cat /sys/class/net/${INTERFACE}/statistics/rx_bytes)
@@ -19,25 +19,24 @@ then
     sleep 1
     RX_NEW=$(cat /sys/class/net/${INTERFACE}/statistics/rx_bytes)
     TX_NEW=$(cat /sys/class/net/${INTERFACE}/statistics/tx_bytes)
-    TX_BYTES=$(( ${TX_NEW} - ${TX_OLD} ))
     RX_BYTES=$(( ${RX_NEW} - ${RX_OLD} ))
+    TX_BYTES=$(( ${TX_NEW} - ${TX_OLD} ))
     # Debug # echo "RX ${RX_BYTES} B/s; TX ${TX_BYTES} B/s"
-    TX_BITS=$(( ${TX_BYTES} * 8))
     RX_BITS=$(( ${RX_BYTES} * 8))
-
+    TX_BITS=$(( ${TX_BYTES} * 8))
     if [ "${TX_BITS}" -ge "1000000" ] || [ "${RX_BITS}" -ge "1000000" ]
     then
         RX_BITS=$(( ${RX_BITS} / 1000000 ))
         TX_BITS=$(( ${TX_BITS} / 1000000 ))
-        echo "RX ${RX_BITS} Mb/s; TX ${TX_BITS} Mb/s"
+        printf "RX %04d Mb/s; TX %04d Mb/s\n" ${RX_BITS} ${TX_BITS}
     elif [ "${TX_BITS}" -ge "1000" ] || [ "${RX_BITS}" -ge "1000" ]
     then
-        RX_BITS=$(( ${RX_BITS} / 1000 ))
+        RX_BITS=$(( ${RX_BITS} / 1000 )) 
         TX_BITS=$(( ${TX_BITS} / 1000 ))
-        echo "RX ${RX_BITS} kb/s; TX ${TX_BITS} kb/s"
+        printf "RX %04d kb/s; TX %04d kb/s\n" ${RX_BITS} ${TX_BITS}
     else
-        echo "RX ${RX_BITS}  b/s; TX ${TX_BITS}  b/s"
+        printf "RX %04d  b/s; TX %04d  b/s\n" ${RX_BITS} ${TX_BITS}
     fi
 else
-    echo "UNKNOWN"
+    printf "UNKNOWN\n"
 fi
