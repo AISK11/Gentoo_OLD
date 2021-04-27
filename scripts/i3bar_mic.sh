@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Author: AISK11
-# Description: This script show, if microphone is in use.
+# Description: This script shows, if microphone is in use.
 # Created for: i3bar
 # Dependencies: amixer
 
