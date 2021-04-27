@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# Author: AISK11
+# Description: This script will lover screen brightness by 10%, but prevent 0% brightness.
+# Created for: ~/.config/i3/config:
+# bindsym XF86MonBrightnessUp exec xbacklight -inc 10
+# bindsym XF86MonBrightnessDown exec ~/.config/i3/brightness.sh
+# Dependencies: xbacklight
+
+if [ "$(xbacklight -get | cut -d'.' -f1)" -le "10" ]
+then
+    xbacklight -set 10
+else
+    xbacklight -dec 10
+fi
