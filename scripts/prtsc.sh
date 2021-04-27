@@ -1,8 +1,16 @@
 #!/usr/bin/env sh
-if [ -d ~/.screenshots/ ]
+
+# Author: AISK11
+# Description: This script make png print screen in ${DIRECTORY} with time as a name
+# Created for: i3
+# Dependencies: scrot
+
+DIRECTORY="~/.screenshots/"
+
+if [ -d ${DIRECTORY} ]
 then
-    scrot --silent --pointer ~/.screenshots/$(date '+%Y-%m-%d_%H:%M:%S').png
+    scrot --silent --pointer ${DIRECTORY}$(date '+%Y-%m-%d_%H:%M:%S').png
 else
     mkdir -p ~/.screenshots/
-    scrot --silent --pointer ~/.screenshots/$(date '+%Y-%m-%d_%H:%M:%S').png
+    scrot --silent --pointer ${DIRECTORY}$(date '+%Y-%m-%d_%H:%M:%S').png
 fi
