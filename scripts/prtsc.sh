@@ -2,7 +2,8 @@
 
 # Author: AISK11
 # Description: This script make png print screen in ${DIRECTORY} with time as a name.
-# Created for: i3
+# Created for: ~/.config/i3/config:
+# bindsym Print exec ~/.config/i3/scripts/prtsc.sh
 # Dependencies: scrot
 
 DIRECTORY="~/.screenshots/"
