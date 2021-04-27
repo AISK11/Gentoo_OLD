@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Author: AISK11
-# Description: This script make png print screen in ${DIRECTORY} with time as a name
+# Description: This script make png print screen in ${DIRECTORY} with time as a name.
 # Created for: i3
 # Dependencies: scrot
 
