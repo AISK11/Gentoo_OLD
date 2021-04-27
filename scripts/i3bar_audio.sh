@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Author: AISK11
-# Description: This script show current volume or status of the audio.
+# Description: This script shows current volume or status of the audio.
 # Created for: i3bar
 # Dependencies: amixer
 
