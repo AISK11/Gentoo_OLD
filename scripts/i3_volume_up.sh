@@ -7,7 +7,7 @@
 # bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10%
 # bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
 # bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
-# Dependencies: media-sound/pulseaudio
+# Dependencies: media-sound/pulseaudio sys-apps/grep
 # BUG: Audio can be raised above 100% when audio is not played. When audio is played and raised again, it will fall to 100%.
 
 VOLUME=$(pactl list sinks | grep -A9 "RUNNING" | grep "Volume" | cut -d'/' -f2 | cut -d'%' -f1)
