@@ -5,7 +5,7 @@
 # Created for: ~/.config/i3/config:
 # bindsym XF86MonBrightnessUp exec xbacklight -inc 10
 # bindsym XF86MonBrightnessDown exec ~/.config/i3/scripts/i3_brightness_decrease.sh
-# Dependencies: xbacklight
+# Dependencies: x11-apps/xbacklight
 
 if [ "$(xbacklight -get | cut -d'.' -f1)" -le "10" ]
 then
