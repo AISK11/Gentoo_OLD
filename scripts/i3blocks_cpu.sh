@@ -3,7 +3,7 @@
 # Author: AISK11
 # Description: This script shows CPU utilization in percentage.
 # Created for: i3blocks
-# Dependencies: sys-apps/coreutils app-admin/sysstat
+# Dependencies: sys-apps/coreutils app-admin/sysstat sys-apps/util-linux
 
 USAGE=$((10000 - $(mpstat 1 1 | tail -n 1 | rev | cut -d' ' -f1 | rev | tr -d .)))
 
