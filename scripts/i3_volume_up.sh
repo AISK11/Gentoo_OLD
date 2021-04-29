@@ -3,7 +3,7 @@
 # Author: AISK11
 # Description: This script will increase audio volume by 10% up to 100%.
 # Created for: ~/.config/i3/config:
-# bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.config/i3/scripts/volume_up.sh 
+# bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.config/i3/scripts/i3_volume_up.sh 
 # bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10%
 # bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
 # bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
