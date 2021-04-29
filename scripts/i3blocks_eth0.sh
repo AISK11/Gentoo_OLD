@@ -5,6 +5,7 @@
 # 1 MB/s = 8 Mb/s
 # 1 Mb/s = 1,000 kb/s = 1,000,000 b/s
 # Created for: i3blocks
+# Dependencies: sys-apps/coreutils sys-apps/grep sys-apps/iproute2
 
 # interfaces=<eth0|wlan0|lo>
 INTERFACE="eth0"
