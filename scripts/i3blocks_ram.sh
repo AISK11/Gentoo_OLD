@@ -18,4 +18,5 @@ SReclaimable=$(cat /proc/meminfo | grep SReclaimable | tr -s ' ' | cut -d' ' -f2
 
 USED_MEM=$((${MemTotal} + ${Shmem} - ${MemFree} - ${Buffers} - ${Cached} - ${SReclaimable}))
 
+# Show RAM usage in percentage.
 echo "$((USED_MEM * 100 / MemTotal))%"
