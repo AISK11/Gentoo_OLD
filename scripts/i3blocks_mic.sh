@@ -9,10 +9,10 @@ MIC_STATUS=$(amixer get Capture | grep -e "Left.*\[" | cut -d']' -f2 | rev | cut
 
 if [ "${MIC_STATUS}" = "off" ]
 then
-    echo ""
+    echo "off"
 elif [ "${MIC_STATUS}" = "on" ]
 then
-    echo ""
+    echo "on"
 else
     echo "UNKNOWN!"    
 fi
