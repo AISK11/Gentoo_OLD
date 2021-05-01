@@ -9,7 +9,7 @@ USERS="$(who | wc -l)"
 
 if [ "${USERS}" -gt "1" ]
 then
-    echo " ${USERS}!"
+    echo "${USERS}!"
 else
-    echo " ${USERS}"
+    echo "${USERS}"
 fi
