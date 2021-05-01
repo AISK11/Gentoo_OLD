@@ -10,7 +10,7 @@ AUDIO_STATUS=$(amixer get Master | grep -e "Left.*\[" | cut -d']' -f1 | rev | cu
 
 if [ "${AUDIO_MUTED}" = "off" ]
 then
-    echo ""
+    echo "off"
 else
     echo "${AUDIO_STATUS}"    
 fi
