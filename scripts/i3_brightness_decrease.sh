@@ -9,7 +9,7 @@
 
 if [ "$(xbacklight -get | cut -d'.' -f1)" -le "10" ]
 then
-    xbacklight -set 10
+    xbacklight -set 1
 else
     xbacklight -dec 10
 fi
