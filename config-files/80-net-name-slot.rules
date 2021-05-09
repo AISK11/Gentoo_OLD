@@ -1,0 +1,5 @@
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", \
+ENVID_NET_NAME_PATH=="enp12s0", ATTRtype=="1", KERNEL=="eth*", NAME="eth0"
+
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", \
+ENVID_NET_NAME_PATH=="wlp0s20f3", ATTRtype=="1", KERNEL=="wlan*", NAME="wlan0"
